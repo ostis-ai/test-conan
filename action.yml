@@ -1,36 +1,29 @@
-name: Tests (Conan)
+name: Test Conan
 
 inputs:
   directory:
-    description: Directory to change into
+    description: Directory containing the component to build and test
     required: true
 
 runs:
   using: composite
-  strategy:
-    fail-fast: false
-    matrix:
-      config:
-        - { cc: "gcc", cxx: "g++" }
 
   steps:
-    - name: Checkout
+    - name: Checkout Repository
       uses: actions/checkout@v4
-      run: |
-        cd ${{ inputs.directory }}
 
-    - name: Restore ccache caches
+    - name: Restore CCache Cache
       uses: hendrikmuhs/ccache-action@v1.2
       with:
         key: ${{ github.job }}
 
-    - name: Conan cache
+    - name: Restore Conan Package Cache
       uses: actions/cache@v4
       with:
         path: ~/.conan/data
         key: conan-${{ runner.os }}-${{ hashFiles('**/conanfile.py') }}
 
-    - name: apt cache
+    - name: Restore APT Cache
       uses: actions/cache@v4
       with:
         path: |
@@ -38,38 +31,49 @@ runs:
           /var/lib/apt/
         key: apt-${{ runner.os }}-${{ github.job }}
 
-    - name: Set up Python
+    - name: Set Up Python 3.12
       uses: actions/setup-python@v4
       with:
         python-version: "3.12"
 
-    - name: Set up pipx
+    - name: Install and Configure pipx
       run: |
         python -m pip install --user pipx
         python -m pipx ensurepath
+      shell: bash
 
-    - name: Set up Conan
+    - name: Install Conan and CMake via pipx
       run: |
         pipx install cmake
         pipx install conan
+      shell: bash
 
-    - name: Install compilers
-      run: sudo apt install build-essential ninja-build
+    - name: Install Build Tools
+      run: sudo apt install -y build-essential ninja-build
+      shell: bash
 
-    - name: Set Conan remote
+    - name: Configure Conan Remote Repository
       run: |
+        cd ${{ inputs.directory }}
         conan profile detect
         conan remote add ostis-ai https://conan.ostis.net/artifactory/api/conan/ostis-ai-sc-machine/
+      shell: bash
 
-    - name: Install C++ problem solver dependencies
-      run: conan install . --build=missing
-
-    - name: Build component with tests
-      id: run_cmake
+    - name: Install C++ Dependencies
       run: |
+        cd ${{ inputs.directory }}
+        conan install . --build=missing
+      shell: bash
+
+    - name: Build Component with Tests
+      run: |
+        cd ${{ inputs.directory }}
         cmake --preset release-with-tests-conan
         cmake --build --preset release
+      shell: bash
 
-    - name: Run component tests
-      id: run_tests
-      run: cd build/Release && ctest -V
+    - name: Run Component Tests
+      run: |
+        cd ${{ inputs.directory }}/build/Release
+        ctest -V
+      shell: bash
