@@ -62,7 +62,7 @@ runs:
       run: |
         cd ${{ inputs.directory }}
         conan profile detect
-        conan remote add ostis-ai https://conan.ostis.net/artifactory/api/conan/ostis-ai-sc-machine/
+        conan remote add ostis-ai https://conan.ostis.net/artifactory/api/conan/ostis-ai-library/
       shell: bash
 
     - name: Install C++ Dependencies
