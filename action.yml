@@ -4,6 +4,12 @@ inputs:
   directory:
     description: Directory containing the component to build and test
     required: true
+  configure-preset: 
+    description: Preset to configure the component with tests
+    required: true
+  build-preset: 
+    description: Preset to build the component
+    required: true
 
 runs:
   using: composite
@@ -68,8 +74,8 @@ runs:
     - name: Build Component with Tests
       run: |
         cd ${{ inputs.directory }}
-        cmake --preset release-with-tests-conan
-        cmake --build --preset release
+        cmake --preset ${{ inputs.configure-preset }}
+        cmake --build --preset ${{ inputs.build-preset }}
       shell: bash
 
     - name: Run Component Tests

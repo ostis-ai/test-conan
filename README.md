@@ -8,6 +8,14 @@ This GitHub Action is designed to build and test a C++ component of ostis-system
 
 The directory containing the component to build and test.
 
+### `configure-preset` (required)
+
+The Conan configuration preset for the component to be built and tested.
+
+### `build-preset` (required)
+
+The Conan build preset for the component to be built and tested.
+
 ## Usage
 
 To use this action in your workflow, include the following example configuration:
@@ -25,12 +33,14 @@ jobs:
         uses: ostis-ai@test-conan@0.1.0
         with:
           directory: path/to/component
+          configure-preset: release-with-tests-conan
+          build-preset: release
 ```
 
 ## Requirements
 
 - Ubuntu-based runner
-- CMake presets for component: configure preset - `release-with-tests-conan` and build preset - `release`.
+- CMake presets to configure and build component
 
 ## License
 
